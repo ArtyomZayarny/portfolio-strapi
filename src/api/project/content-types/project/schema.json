@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "projects",
+  "info": {
+    "singularName": "project",
+    "pluralName": "projects",
+    "displayName": "Project",
+    "description": "Portfolio projects showcase"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "image": {
+      "allowedTypes": ["images", "files", "videos", "audios"],
+      "type": "media",
+      "required": true,
+      "multiple": false
+    },
+    "tag": {
+      "type": "enumeration",
+      "enum": ["Web", "Mobile"],
+      "required": true,
+      "multiple": true
+    },
+    "gitUrl": {
+      "type": "string",
+      "required": true,
+      "regex": "^https://github\\.com/.*"
+    },
+    "previewUrl": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
