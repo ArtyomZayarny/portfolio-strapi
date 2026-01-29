@@ -1,3 +1,31 @@
+# 🚀 Portfolio Strapi Backend
+
+Strapi CMS backend for portfolio projects.
+
+## 📡 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/admin` | GET | Admin panel (manage content) |
+| `/api/projects` | GET | List all published projects |
+| `/api/projects/:id` | GET | Get single project by ID |
+
+### Test API (after deploy)
+
+```bash
+# Replace with your Render URL
+./scripts/test-api.sh https://YOUR-APP.onrender.com
+```
+
+Or with curl:
+```bash
+curl https://YOUR-APP.onrender.com/api/projects
+```
+
+**Important:** Enable public access in Strapi Admin → Settings → Users & Permissions → Roles → Public → Project → check `find` and `findOne`.
+
+---
+
 # 🚀 Getting started with Strapi
 
 Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
