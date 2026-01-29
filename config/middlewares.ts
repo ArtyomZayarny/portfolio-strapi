@@ -8,6 +8,7 @@ export default [
       origin: [
         'http://localhost:3000',
         'http://localhost:3001',
+        'https://my-portfolio-vert-one-90.vercel.app',
         process.env.FRONTEND_URL,
       ].filter(Boolean),
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
