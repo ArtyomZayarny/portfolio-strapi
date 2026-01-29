@@ -162,45 +162,36 @@ async function setProjectPermissions(strapi: Core.Strapi) {
   try {
     console.log('Setting up project permissions...');
 
-    // Get the public role
-    const publicRole = await strapi
-      .db.query('plugin::users-permissions.role')
-      .findOne({ where: { type: 'public' } });
+    const roleService = strapi.service('plugin::users-permissions.role') as {
+      findOne: (id: number) => Promise<{ id: number; permissions: Record<string, unknown> }>;
+      updateRole: (id: number, data: { permissions: Record<string, unknown> }) => Promise<void>;
+    };
+
+    const roles = await strapi.db.query('plugin::users-permissions.role').findMany();
+    const publicRole = roles.find((r: { type: string }) => r.type === 'public');
 
     if (!publicRole) {
       console.log('Public role not found');
       return;
     }
 
-    console.log('Setting permissions for public role');
+    const roleWithPermissions = await roleService.findOne(publicRole.id);
+    const permissions = roleWithPermissions.permissions as Record<
+      string,
+      { controllers: Record<string, Record<string, { enabled: boolean }>> }
+    >;
 
-    // Use the plugin service to update permissions
-    const usersPermissionsService = strapi.service('plugin::users-permissions.permissions');
-
-    if (usersPermissionsService && usersPermissionsService.updateRole) {
-      // Try updating role with new permissions
-      const permissions = {
-        'api::project.project': {
-          controllers: {
-            project: {
-              find: [{ enabled: true }],
-              findOne: [{ enabled: true }],
-            },
-          },
-        },
-      };
-
-      await usersPermissionsService.updateRole(publicRole.id, {
-        permissions,
-      });
-
-      console.log('Project permissions configured successfully');
+    if (permissions['api::project.project']) {
+      permissions['api::project.project'].controllers.project.find.enabled = true;
+      permissions['api::project.project'].controllers.project.findOne.enabled = true;
+      await roleService.updateRole(publicRole.id, { permissions });
+      console.log('Project permissions (find, findOne) configured successfully');
     } else {
-      console.log('Users-permissions service not available, permissions must be set manually');
+      console.log('Set manually: Admin → Settings → Users & Permissions → Public → Project → find, findOne');
     }
   } catch (error) {
     console.error('Error setting permissions:', error);
-    console.log('Permissions must be set manually through the admin panel');
+    console.log('Permissions must be set manually: Admin → Settings → Users & Permissions → Public → Project → find, findOne');
   }
 }
 
@@ -220,8 +211,8 @@ export default {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap({ strapi }: { strapi: Core.Strapi }) {
-    seedProjects(strapi);
-    setProjectPermissions(strapi);
+  async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    await seedProjects(strapi);
+    await setProjectPermissions(strapi);
   },
 };
