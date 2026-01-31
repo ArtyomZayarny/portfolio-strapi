@@ -30,6 +30,10 @@
     "@types/react-dom": "^18",
     "typescript": "^5"
   },
+  "optionalDependencies": {
+    "@swc/core-linux-x64-gnu": "1.11.13",
+    "@swc/core-linux-x64-musl": "1.11.13"
+  },
   "engines": {
     "node": ">=20.0.0 <=24.x.x",
     "npm": ">=6.0.0"
