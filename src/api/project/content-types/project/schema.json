@@ -25,7 +25,7 @@
     "image": {
       "allowedTypes": ["images", "files", "videos", "audios"],
       "type": "media",
-      "required": true,
+      "required": false,
       "multiple": false
     },
     "tag": {
