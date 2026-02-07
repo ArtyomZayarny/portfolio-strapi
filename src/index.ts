@@ -121,11 +121,24 @@ async function uploadProjectImages(strapi: Core.Strapi) {
 
 async function seedProjects(strapi: Core.Strapi) {
   try {
-    // Check if projects already exist
-    const existingProjects = await strapi.db.query('api::project.project').findMany();
-    if (existingProjects && existingProjects.length > 0) {
-      console.log('Projects already seeded, skipping...');
+    // Check if properly seeded projects exist (via Document Service)
+    const existing = await strapi.documents('api::project.project').findMany();
+
+    // Also check for orphaned rows created via db.query (not visible in admin)
+    const dbRows = await strapi.db.query('api::project.project').findMany();
+
+    if (existing.length > 0 && existing.length === dbRows.length) {
+      console.log(`Projects already seeded (${existing.length} documents), skipping...`);
       return;
+    }
+
+    // Clean up orphaned rows that were created via db.query instead of Document Service
+    if (dbRows.length > 0 && dbRows.length !== existing.length) {
+      console.log(`Found ${dbRows.length} DB rows but only ${existing.length} documents. Cleaning up...`);
+      for (const row of dbRows) {
+        await strapi.db.query('api::project.project').delete({ where: { id: row.id } });
+      }
+      console.log('Cleaned up orphaned rows.');
     }
 
     console.log('Seeding projects...');
@@ -136,17 +149,17 @@ async function seedProjects(strapi: Core.Strapi) {
     for (const projectData of projectsData) {
       const imageId = uploadedImages[projectData.image] || null;
 
-      // Create project entry with image
-      const project = await strapi.db.query('api::project.project').create({
+      // Create project entry using Document Service (required for Strapi v5 admin)
+      const project = await strapi.documents('api::project.project').create({
         data: {
           title: projectData.title,
           description: projectData.description,
-          tag: projectData.tag,
+          tag: projectData.tag as any,
           gitUrl: projectData.gitUrl,
           previewUrl: projectData.previewUrl,
           image: imageId,
-          publishedAt: new Date(),
         },
+        status: 'published',
       });
 
       console.log(`Created project: ${project.title}${imageId ? ' with image' : ' (no image)'}`);
