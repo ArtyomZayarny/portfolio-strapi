@@ -7,7 +7,7 @@ const projectsData = [
     title: "AI Resume builder",
     image: "ai-resume-builder.png",
     description: "An AI-powered resume builder application",
-    tag: ["Web"],
+    tag: "Web",
     gitUrl: "https://github.com/ArtyomZayarny/ai-builder-app",
     previewUrl: "https://ai-builder-app-kappa.vercel.app/",
   },
@@ -15,7 +15,7 @@ const projectsData = [
     title: "Dental care",
     image: "dental-care.png",
     description: "A dental care management system",
-    tag: ["Web"],
+    tag: "Web",
     gitUrl: "https://github.com/ArtyomZayarny/dentalscaner",
     previewUrl: "https://dentalscaner-fe.vercel.app/",
   },
@@ -23,7 +23,7 @@ const projectsData = [
     title: "Neuro focus",
     image: "neuro-focus.png",
     description: "A neuroscience-focused productivity app",
-    tag: ["Web"],
+    tag: "Web",
     gitUrl: "https://github.com/ArtyomZayarny/neuro-focus",
     previewUrl: "https://neuro-focus-murex.vercel.app/",
   },
@@ -31,7 +31,7 @@ const projectsData = [
     title: "Tickets booking system",
     image: "tickets-booking.png",
     description: "A ticket booking and reservation system",
-    tag: ["Web"],
+    tag: "Web",
     gitUrl: "https://github.com/ArtyomZayarny/booking-ticks/",
     previewUrl: "https://booking-ticks-fe.vercel.app/",
   },
@@ -39,7 +39,7 @@ const projectsData = [
     title: "Trello clone",
     image: "trello-clone.png",
     description: "A Trello-like project management tool",
-    tag: ["Web"],
+    tag: "Web",
     gitUrl: "https://github.com/ArtyomZayarny/TaskManager",
     previewUrl: "https://trello-clone-tau-sage.vercel.app/",
   },
@@ -47,7 +47,7 @@ const projectsData = [
     title: "Bike booking admin panel",
     image: "bike-admin.png",
     description: "An admin panel for bike booking management",
-    tag: ["Web"],
+    tag: "Web",
     gitUrl: "https://github.com/ArtyomZayarny/bike-booking",
     previewUrl: "/images/projects/bike-admin.png",
   },
@@ -55,7 +55,7 @@ const projectsData = [
     title: "Article management system",
     image: "article-manager.png",
     description: "A content management system for articles",
-    tag: ["Web"],
+    tag: "Web",
     gitUrl: "https://github.com/ArtyomZayarny/article-manager",
     previewUrl: "/images/projects/article-manager.png",
   },
@@ -63,7 +63,7 @@ const projectsData = [
     title: "Landing page",
     image: "landing-page.png",
     description: "A minimalist landing page",
-    tag: ["Web"],
+    tag: "Web",
     gitUrl: "https://github.com/ArtyomZayarny/lp-mnmlst",
     previewUrl: "https://lp-mnmlst.vercel.app/",
   },
@@ -147,22 +147,25 @@ async function seedProjects(strapi: Core.Strapi) {
     const uploadedImages = await uploadProjectImages(strapi);
 
     for (const projectData of projectsData) {
-      const imageId = uploadedImages[projectData.image] || null;
+      try {
+        const imageId = uploadedImages[projectData.image] || null;
 
-      // Create project entry using Document Service (required for Strapi v5 admin)
-      const project = await strapi.documents('api::project.project').create({
-        data: {
-          title: projectData.title,
-          description: projectData.description,
-          tag: projectData.tag as any,
-          gitUrl: projectData.gitUrl,
-          previewUrl: projectData.previewUrl,
-          image: imageId,
-        },
-        status: 'published',
-      });
+        const project = await strapi.documents('api::project.project').create({
+          data: {
+            title: projectData.title,
+            description: projectData.description,
+            tag: projectData.tag,
+            gitUrl: projectData.gitUrl,
+            previewUrl: projectData.previewUrl,
+            ...(imageId ? { image: imageId } : {}),
+          } as any,
+          status: 'published',
+        });
 
-      console.log(`Created project: ${project.title}${imageId ? ' with image' : ' (no image)'}`);
+        console.log(`Created project: ${project.title}${imageId ? ' with image' : ' (no image)'}`);
+      } catch (err) {
+        console.error(`Failed to create project "${projectData.title}":`, err);
+      }
     }
 
     console.log('Project seeding completed!');
